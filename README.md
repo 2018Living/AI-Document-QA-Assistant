@@ -21,8 +21,11 @@ streamlit run chat_app.py
 text
 API_KEY=你的智谱API密钥
 BASE_URL=https://open.bigmodel.cn/api/paas/v4/
-效果截图
-（以后你可以加一张截图）
+
+## 📸 效果截图
+
+![运行截图](images/screenshot.png)
+
 
 技术栈
 Python + Streamlit
