@@ -1,0 +1,15 @@
+2026-04-01 21:37:16,379 - __main__ - INFO - Ӧ������
+2026-04-01 21:39:51,396 - __main__ - INFO - 应用启动
+2026-04-01 21:50:10,124 - __main__ - INFO - 应用启动
+2026-04-01 21:50:16,841 - __main__ - INFO - 应用启动
+2026-04-01 21:52:03,903 - __main__ - INFO - 应用启动
+2026-04-01 21:52:04,749 - __main__ - ERROR - AI调用失败: Completions.create() got an unexpected keyword argument 'timeour'. Did you mean 'timeout'?
+2026-04-01 21:53:44,633 - __main__ - INFO - 应用启动
+2026-04-01 21:53:50,460 - __main__ - INFO - 应用启动
+2026-04-01 21:53:50,463 - __main__ - ERROR - 读取文件失败：Cannot read an empty file
+2026-04-01 21:54:03,448 - __main__ - INFO - 应用启动
+2026-04-01 21:54:03,450 - __main__ - ERROR - 读取文件失败：Cannot read an empty file
+2026-04-01 21:54:05,939 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2026-04-01 21:55:08,911 - __main__ - INFO - 应用启动
+2026-04-01 21:55:15,861 - __main__ - INFO - 应用启动
+2026-04-01 21:55:16,519 - __main__ - ERROR - AI调用失败: 'ascii' codec can't encode characters in position 7-11: ordinal not in range(128)

@@ -4,9 +4,22 @@ import pypdf
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+import logging
+import sys
 
 # ========== 加载环境变量 ==========
 load_dotenv()
+
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('app.log', encoding='utf-8'), # 写入文件
+        logging.StreamHandler(sys.stdout) # 同时输出到终端
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # ========== 函数定义 ==========
 def split_text_into_chunks(text, chunk_size=500, overlap=100):
@@ -66,25 +79,28 @@ def retrieve_relevant_chunks(query, chunks, top_k=3):
 
 def read_file_content(uploaded_file):
     """根据文件类型读取内容，返回字符串"""
-    file_type = uploaded_file.type
-    
-    if file_type == "text/plain":
-        # 处理txt文件
-        return uploaded_file.read().decode("utf-8")
-    
-    elif file_type == "application/pdf":
-        # 处理PDF文件
-        pdf_reader = pypdf.PdfReader(uploaded_file)
-        text = ""
-        for page in pdf_reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-        return text
-    
-    else:
-        return f"不支持的文件类型: {file_type}"
-
+    try:
+        file_type = uploaded_file.type
+        
+        if file_type == "text/plain":
+            # 处理txt文件
+            return uploaded_file.read().decode("utf-8")
+        
+        elif file_type == "application/pdf":
+            # 处理PDF文件
+            pdf_reader = pypdf.PdfReader(uploaded_file)
+            text = ""
+            for page in pdf_reader.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + "\n"
+            return text
+        
+        else:
+            return f"不支持的文件类型: {file_type}"
+    except Exception as e:
+        logger.error(f"读取文件失败：{e}")
+        return f"文件读取失败：{str(e)}"
 
 # ========== 初始化客户端 ==========
 client = OpenAI(
@@ -94,6 +110,7 @@ client = OpenAI(
 
 # ========== 页面标题 ==========
 st.title("💬 我的第一个AI助手")
+logger.info("应用启动")
 
 # ========== 侧边栏：文件上传 ==========
 st.sidebar.header("📁 文件上传")
@@ -187,12 +204,18 @@ if prompt := st.chat_input("说点什么吧"):
                 messages_to_send.insert(1, rag_context)
 
     # ========== 调用AI ==========
-    response = client.chat.completions.create(
-        model="glm-4-flash",
-        messages=messages_to_send
-    )
+    try:
+        response = client.chat.completions.create(
+            model="glm-4-flash",
+            messages=messages_to_send,
+            timeout=30 # 30秒超时，防止卡死
+        )
 
-    msg = response.choices[0].message.content
+        msg = response.choices[0].message.content
+
+    except Exception as e:
+        logger.error(f"AI调用失败: {e}")
+        msg = f"抱歉，AI服务出了点问题：{str(e)}"
     
     # 显示回复
     st.chat_message("assistant").write(msg)
