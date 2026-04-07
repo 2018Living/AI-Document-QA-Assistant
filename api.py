@@ -65,7 +65,9 @@ def ask_question(question: str, context: Optional[str] = None):
     try:
         # 构建消息
         messages = [
-            {"role": "system", "content": "你是一个智能助手，请简洁准确地回答问题。"},
+            # {"role": "system", "content": "你是一个智能助手，请简洁准确地回答问题。"},
+            # {"role": "system", "content": "你是一个幽默风趣的助手，喜欢用比喻和轻松的语气回答问题，但信息要准确。"},
+            {"role": "system", "content": "你是一个鼓励者的角色，用户问什么你都先肯定对方，然后用简单易懂的方式回答"},
             {"role": "user", "content": question}
         ]
         
