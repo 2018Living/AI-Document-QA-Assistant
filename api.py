@@ -5,12 +5,27 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
+import logging
+import sys
 
 # ========== 加载环境变量 ==========
 load_dotenv()
 
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('api.log', encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
+
+
 # ========== 初始化 FastAPI ==========
 app = FastAPI(title="AI文档问答API", description="基于智谱AI的文档问答服务")
+logger.info("FastAPI 服务启动")
 
 # ========== 初始化 OpenAI 客户端 ==========
 client = OpenAI(
@@ -62,6 +77,7 @@ def ask_question(question: str, context: Optional[str] = None):
     提问接口
     接收用户问题，返回AI回答
     """
+    logger.info(f"收到提问：{question}")
     try:
         # 构建消息
         messages = [
@@ -82,9 +98,11 @@ def ask_question(question: str, context: Optional[str] = None):
         )
 
         answer = response.choices[0].message.content
+        logger.info(f"AI 回答成功，长度：{len(answer)}字符")
         return AnswerResponse(answer=answer, status="success")           
 
     except Exception as e:
+        logger.error(f"AI 调用失败：{e}")
         return AnswerResponse(answer=f"服务出错： {str(e)}", status="error")
 
 # ========== 健康检查 ==========
