@@ -47,6 +47,11 @@ class AnswerResponse(BaseModel):
 # ========== 关键词检索函数（从 chat_app.py 复用）==========
 def extract_keywords(text: str) -> set:
     """提取中英文关键词"""
+    # 方案一：在中文和英文/数字之间加一个虚拟分隔符，强制拆分
+    import re
+    # 在中文和英文/数字之间插入空格
+    text = re.sub(r'([\u4e00-\u9fff])([a-zA-Z0-9])', r'\1 \2', text)
+    text = re.sub(r'([a-zA-Z0-9])([\u4e00-\u9fff])', r'\1 \2', text)
     return set(re.findall(r'[\w\u4e00-\u9fff]+', text.lower()))
 
 def retrieve_relevant_chunks(query: str, chunks: List[str], top_k: int = 3) -> List[str]:
