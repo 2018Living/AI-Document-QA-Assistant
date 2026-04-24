@@ -22,7 +22,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 # ========== 初始化 FastAPI ==========
 app = FastAPI(title="AI文档问答API", description="基于智谱AI的文档问答服务")
 logger.info("FastAPI 服务启动")
