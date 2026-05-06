@@ -80,6 +80,20 @@ def retrieve_relevant_chunks(query, chunks, top_k=3):
     
     return relevant if relevant else chunks[:top_k]
 
+def vector_search(query, chunks, model, top_k=3):
+    """用向量检索替代关键词检索（函数已写好，可随时启用）"""
+    # 将问题和所有段落转成向量
+    query_vec = model.encode([query])
+    chunks_vecs = model.encode(chunks)
+
+    # 计算余弦相似度
+    from sklearn.metrics.pairwise import cosine_similarity
+    similarities = cosine_similarity(query_vec, chunks_vecs)[0]
+
+    # 取相似度最高的 top_k 个索引
+    top_idx = similarities.argsort()[-top_k:][::-1]
+    return [chunks[i] for i in top_idx]
+
 
 def read_file_content(uploaded_file):
     """根据文件类型读取内容"""
@@ -176,8 +190,31 @@ if prompt := st.chat_input("说点什么吧"):
     
     messages_to_send = st.session_state["messages"].copy()
 
-    # ========== RAG：关键词检索 ==========
+    # # ========== RAG：关键词检索 ==========
+    # if st.session_state["file_chunks"]:
+    #     user_query = None
+    #     for msg in reversed(st.session_state["messages"]):
+    #         if msg["role"] == "user":
+    #             user_query = msg["content"]
+    #             break
+
+    #     if user_query:
+    #         relevant_chunks = retrieve_relevant_chunks(user_query, st.session_state["file_chunks"])
+    #         st.session_state["last_retrieved_chunks"] = relevant_chunks
+            
+    #         if relevant_chunks:
+    #             context = "\n\n---\n\n".join(relevant_chunks)
+    #             rag_context = {
+    #                 "role": "system",
+    #                 "content": f"以下是从用户上传的文档中检索到的相关内容，请基于这些内容回答用户的问题。\n\n{context}"
+    #             }
+    #             messages_to_send.insert(1, rag_context)
+
+    # ========== RAG：向量检索 ==========
     if st.session_state["file_chunks"]:
+        from sentence_transformers import SentenceTransformer
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+        
         user_query = None
         for msg in reversed(st.session_state["messages"]):
             if msg["role"] == "user":
@@ -185,7 +222,7 @@ if prompt := st.chat_input("说点什么吧"):
                 break
 
         if user_query:
-            relevant_chunks = retrieve_relevant_chunks(user_query, st.session_state["file_chunks"])
+            relevant_chunks = vector_search(user_query, st.session_state["file_chunks"], model)
             st.session_state["last_retrieved_chunks"] = relevant_chunks
             
             if relevant_chunks:
@@ -195,7 +232,6 @@ if prompt := st.chat_input("说点什么吧"):
                     "content": f"以下是从用户上传的文档中检索到的相关内容，请基于这些内容回答用户的问题。\n\n{context}"
                 }
                 messages_to_send.insert(1, rag_context)
-
     # ========== 调用AI ==========
     try:
         response = client.chat.completions.create(
